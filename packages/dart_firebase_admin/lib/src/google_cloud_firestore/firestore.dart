@@ -13,21 +13,37 @@ import '../object_utils.dart';
 import 'util.dart';
 
 part 'convert.dart';
+
 part 'document.dart';
+
 part 'document_reader.dart';
+
 part 'field_value.dart';
+
 part 'firestore.freezed.dart';
+
 part 'geo_point.dart';
+
 part 'path.dart';
+
 part 'reference.dart';
+
 part 'serializer.dart';
+
 part 'timestamp.dart';
+
 part 'transaction.dart';
+
 part 'types.dart';
+
 part 'write_batch.dart';
+
 part 'document_change.dart';
+
 part 'filter.dart';
+
 part 'firestore_exception.dart';
+
 part 'collection_group.dart';
 
 class Firestore {
@@ -75,6 +91,34 @@ class Firestore {
     );
 
     return rootDocument.listCollections();
+  }
+
+  Future<Transaction> _beginTransaction() {
+    return _client.v1((c) async {
+      final response = await c.projects.databases.documents.beginTransaction(
+        firestore1.BeginTransactionRequest(),
+        _formattedDatabaseName,
+      );
+
+      if (response.transaction == null) {
+        throw StateError('Received null transaction ID.');
+      }
+      return Transaction(this, response.transaction!);
+    });
+  }
+
+  Future<T> runTransaction<T>(
+    Future<T> Function(Transaction transaction) updateFunction,
+  ) async {
+    final transaction = await _beginTransaction();
+    try {
+      final result = await updateFunction(transaction);
+      await transaction.commit();
+      return result;
+    } catch (e) {
+      await transaction.rollback();
+      rethrow;
+    }
   }
 
   /// Gets a [DocumentReference] instance that
