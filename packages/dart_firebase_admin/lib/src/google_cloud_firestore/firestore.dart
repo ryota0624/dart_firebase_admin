@@ -216,6 +216,7 @@ class Firestore {
   Future<List<DocumentSnapshot<T>>> getAll<T>(
     List<DocumentReference<T>> documents, [
     ReadOptions? readOptions,
+    Transaction? tx,
   ]) async {
     if (documents.isEmpty) {
       throw ArgumentError.value(
@@ -231,7 +232,7 @@ class Firestore {
     final reader = _DocumentReader(
       firestore: this,
       documents: documents,
-      transactionId: null,
+      transactionId: tx?.transactionId,
       fieldMask: fieldMask,
     );
 

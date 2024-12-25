@@ -252,8 +252,15 @@ final class DocumentReference<T> implements _Serializable {
     );
   }
 
-  Future<DocumentSnapshot<T>> get() async {
-    final result = await firestore.getAll([this]);
+  Future<DocumentSnapshot<T>> get({
+    Transaction? tx,
+    ReadOptions? readOptions,
+  }) async {
+    final result = await firestore.getAll(
+      [this],
+      readOptions,
+      tx,
+    );
     return result.single;
   }
 
@@ -535,6 +542,7 @@ class _QueryOptions<T> with _$QueryOptions<T> {
     // query to provide consistent results.
     @Default(true) bool requireConsistency,
   }) = __QueryOptions<T>;
+
   _QueryOptions._();
 
   /// Returns query options for a single-collection query.
@@ -1133,7 +1141,11 @@ base class Query<T> {
   ///   });
   /// });
   /// ```
-  Future<QuerySnapshot<T>> get() => _get(transactionId: null);
+  Future<QuerySnapshot<T>> get({
+    String? transactionId,
+  }) async {
+    return _get(transactionId: transactionId);
+  }
 
   Future<QuerySnapshot<T>> _get({required String? transactionId}) async {
     final response = await firestore._client.v1((client) async {
