@@ -93,7 +93,7 @@ class Firestore {
     return rootDocument.listCollections();
   }
 
-  Future<Transaction> _beginTransaction() {
+  Future<Transaction> beginTransaction() {
     return _client.v1((c) async {
       final response = await c.projects.databases.documents.beginTransaction(
         firestore1.BeginTransactionRequest(),
@@ -110,7 +110,7 @@ class Firestore {
   Future<T> runTransaction<T>(
     Future<T> Function(Transaction transaction) updateFunction,
   ) async {
-    final transaction = await _beginTransaction();
+    final transaction = await beginTransaction();
     try {
       final result = await updateFunction(transaction);
       await transaction.commit();
